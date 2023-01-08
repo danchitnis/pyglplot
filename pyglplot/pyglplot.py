@@ -25,7 +25,13 @@ class Pyglplot(mglw.WindowConfig):
             vertex_shader='''
                 #version 330
                 in vec2 coordinates;
+                in vec3 uColor;
+
+                out vec3 vColor;
+                
+                
                 void main(void) {
+                    vColor = uColor;
                     float x = coordinates.x;
                     float y = coordinates.y;
                     vec2 line = vec2(x, y);
@@ -35,34 +41,39 @@ class Pyglplot(mglw.WindowConfig):
 
             fragment_shader='''
                 #version 330
-                precision mediump float;
-                uniform highp vec4 uColor;
+                in vec3 vColor;
                 void main(void) {
-                    gl_FragColor =  vec4(1.0, 0.5, 0.5, 1.0);
+                    gl_FragColor =  vec4(vColor,1);
                 }
             ''',
         )
         self.x = np.array([0, 0])
         self.y = np.array([1, 1])
 
+        self.r = np.array([1, 1])
+        self.g = np.array([1, 1])
+        self.b = np.array([1, 1])
+
+
         self.doStuff()
 
         #self.vertices = np.array([[-1.0, -1.0, 0.6, 0.8]])
 
     def setXY(self):
+        
         self.x = np.array([0, 0])
         self.y = np.array([1, 1])
 
     def doStuff(self):
-        self.vertices = np.dstack([self.x, self.y])
+        self.vertices = np.dstack([self.x, self.y, self.r, self.g, self.b])
         self.vbo = self.ctx.buffer(self.vertices.astype('f4').tobytes())
-        self.vao = self.ctx.simple_vertex_array(
-            self.prog, self.vbo, 'coordinates')
+        self.vao = self.ctx.simple_vertex_array(self.prog, self.vbo, 'coordinates', 'uColor')
 
-        self.vertices2 = np.dstack([self.y, self.x])
+        self.vertices2 = np.dstack([self.y, self.x, self.b, self.r, self.g])
         self.vbo2 = self.ctx.buffer(self.vertices2.astype('f4').tobytes())
-        self.vao2 = self.ctx.simple_vertex_array(
-            self.prog, self.vbo2, 'coordinates')
+        self.vao2 = self.ctx.simple_vertex_array(self.prog, self.vbo2, 'coordinates', 'uColor')
+
+        
 
     def render(self, time, frame_time):
         self.ctx.clear(0.0, 0.0, 0.0)
@@ -72,6 +83,7 @@ class Pyglplot(mglw.WindowConfig):
 
         self.vao.render(moderngl.LINE_STRIP)
         self.vao2.render(moderngl.LINE_STRIP)
+        
 
     def resize(self, width: int, height: int):
         print("Window was resized. buffer size is {} x {}".format(width, height))

@@ -21,9 +21,17 @@ from pyglplot import pyglplot
 
 class Example(pyglplot.Pyglplot):
     def setXY(self):
+       
         self.x = np.linspace(-1, 1, 1000)
         self.y = np.sin(self.x * np.pi * 2) * 0.8 + \
             np.random.rand(len(self.x)) * 0.1
+
+        #self.r = np.ones(len(self.x))
+
+        self.r = np.linspace(0, 1, len(self.x))
+        self.g = np.ones(len(self.x))*0.5
+        self.b = np.ones(len(self.x))*0.5
+
 
 
 Example.run()
