@@ -20,3 +20,13 @@ classifiers = [
 [project.urls]
 "Homepage" = "https://github.com/danchitnis/pyglplot"
 "Bug Tracker" = "https://github.com/danchitnis/pyglplot/issues"
+
+[tool.hatch.build]
+exclude = [
+  "tests",
+  "test/*",
+  "test/**",
+  ".github",
+  "docs",
+  "temp"
+]

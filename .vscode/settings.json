@@ -1,0 +1,6 @@
+//https://stackoverflow.com/questions/54015604/disable-python-import-sorting-in-vscode
+{
+    "python.formatting.autopep8Args": [
+        "[\"--ignore\",\"E402\"]  "
+    ]
+}
