@@ -25,25 +25,24 @@ class Pyglplot(mglw.WindowConfig):
             vertex_shader='''
                 #version 330
                 in vec2 coordinates;
-                in vec3 uColor;
-
-                out vec3 vColor;
                 
+                uniform mat2 transform;
+                uniform vec2 offset;
                 
                 void main(void) {
-                    vColor = uColor;
                     float x = coordinates.x;
                     float y = coordinates.y;
-                    vec2 line = vec2(x, y);
+                    vec2 line = transform * vec2(x, y) + offset;
                     gl_Position = vec4(line, 0.0, 1.0);
                 }
             ''',
 
             fragment_shader='''
                 #version 330
-                in vec3 vColor;
+                //in vec3 vColor;
+                uniform vec3 pColor;
                 void main(void) {
-                    gl_FragColor =  vec4(vColor,1);
+                    gl_FragColor =  vec4(pColor,1);
                 }
             ''',
         )
@@ -65,13 +64,17 @@ class Pyglplot(mglw.WindowConfig):
         self.y = np.array([1, 1])
 
     def doStuff(self):
-        self.vertices = np.dstack([self.x, self.y, self.r, self.g, self.b])
+        self.vertices = np.dstack([self.x, self.y])
         self.vbo = self.ctx.buffer(self.vertices.astype('f4').tobytes())
-        self.vao = self.ctx.simple_vertex_array(self.prog, self.vbo, 'coordinates', 'uColor')
+        self.vao = self.ctx.simple_vertex_array(self.prog, self.vbo, 'coordinates')
 
-        self.vertices2 = np.dstack([self.y, self.x, self.b, self.r, self.g])
+        self.vertices2 = np.dstack([self.y, self.x])
         self.vbo2 = self.ctx.buffer(self.vertices2.astype('f4').tobytes())
-        self.vao2 = self.ctx.simple_vertex_array(self.prog, self.vbo2, 'coordinates', 'uColor')
+        self.vao2 = self.ctx.simple_vertex_array(self.prog, self.vbo2, 'coordinates',)
+
+        self.prog["pColor"].value = 1.0, 0.5, 0.5
+        self.prog["transform"].value = 1.0, 0.5, 0, 0.5
+        self.prog["offset"].value = 0.35, 0
 
         
 

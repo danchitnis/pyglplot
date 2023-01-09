@@ -28,10 +28,6 @@ class Example(pyglplot.Pyglplot):
 
         #self.r = np.ones(len(self.x))
 
-        self.r = np.linspace(0, 1, len(self.x))
-        self.g = np.ones(len(self.x))*0.5
-        self.b = np.ones(len(self.x))*0.5
-
 
 
 Example.run()
