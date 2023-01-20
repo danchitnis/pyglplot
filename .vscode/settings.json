@@ -2,5 +2,9 @@
 {
     "python.formatting.autopep8Args": [
         "[\"--ignore\",\"E402\"]  "
-    ]
+    ],
+    "jupyter.widgetScriptSources": [
+        "jsdelivr.com",
+        "unpkg.com"
+    ],
 }
