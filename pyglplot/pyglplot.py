@@ -26,42 +26,47 @@ class Pyglplot(mglw.WindowConfig):
                 #version 330
                 in vec2 coordinates;
                 
-                uniform mat2 transform;
-                uniform vec2 offset;
+                uniform mat2 uScale;
+                uniform vec2 uOffset;
                 
                 void main(void) {
-                    float x = coordinates.x;
-                    float y = coordinates.y;
-                    vec2 line = transform * vec2(x, y) + offset;
+                    vec2 line = uScale * coordinates + uOffset;
                     gl_Position = vec4(line, 0.0, 1.0);
                 }
             ''',
 
             fragment_shader='''
                 #version 330
-                //in vec3 vColor;
                 uniform vec3 pColor;
                 void main(void) {
-                    gl_FragColor =  vec4(pColor,1);
+                    gl_FragColor =  vec4(pColor, 1);
                 }
             ''',
         )
+
         self.x = np.array([0, 0])
         self.y = np.array([1, 1])
 
-        self.r = np.array([1, 1])
-        self.g = np.array([1, 1])
-        self.b = np.array([1, 1])
-
+        self.rgb = np.array([1, 1, 1])
+        
+        self.init()
 
         self.doStuff()
 
         #self.vertices = np.array([[-1.0, -1.0, 0.6, 0.8]])
 
-    def setXY(self):
-        
+    def init(self):
         self.x = np.array([0, 0])
         self.y = np.array([1, 1])
+        self.rgb = np.array([1, 1, 1])
+
+    
+    
+    def setXY(self):    
+        self.x = np.array([0, 0])
+        self.y = np.array([1, 1])
+
+   
 
     def doStuff(self):
         self.vertices = np.dstack([self.x, self.y])
@@ -72,9 +77,9 @@ class Pyglplot(mglw.WindowConfig):
         self.vbo2 = self.ctx.buffer(self.vertices2.astype('f4').tobytes())
         self.vao2 = self.ctx.simple_vertex_array(self.prog, self.vbo2, 'coordinates',)
 
-        self.prog["pColor"].value = 1.0, 0.5, 0.5
-        self.prog["transform"].value = 1.0, 0.5, 0, 0.5
-        self.prog["offset"].value = 0.35, 0
+        self.prog["pColor"].value = self.rgb
+        self.prog["uScale"].value = 1.0, 0.5, 0, 0.5
+        self.prog["uOffset"].value = 0.35, 0
 
         
 
