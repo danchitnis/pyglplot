@@ -10,10 +10,6 @@ from vispy import gloo, app
 from vispy.gloo import Program
 import numpy as np
 
-class Hello:
-    def __init__(self):
-        print("Hello")
-
 
 class Pyglplot(app.Canvas):
     def __init__(self):
@@ -65,7 +61,21 @@ class Pyglplot(app.Canvas):
         self._program.draw('line_strip')
 
     def on_resize(self, event):
-        gloo.set_viewport(0, 0, *event.physical_size)
+        width, height = event.physical_size
+        gloo.set_viewport(0, 0, width, height)
+
+    
+    
+    def setColor(self, color: np.ndarray):
+        self._rgb = color
+        self._program['pColor'] = self._rgb
+
+
+    def setScale(self, scale: np.ndarray):
+        self._program['uScale'] = scale
+
+    def setOffset(self, offset: np.ndarray):
+        self._program['uOffset'] = offset
 
     
     def setXY(self, x: np.ndarray , y: np.ndarray):
