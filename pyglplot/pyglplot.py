@@ -11,7 +11,11 @@ from vispy.gloo import Program
 import numpy as np
 
 
-class LineStrip(gloo.VertexBuffer):
+
+
+class Line(gloo.VertexBuffer):
+    """Line class
+    """
     def __init__(self):
         self._vertex = """
             #version 330
@@ -42,6 +46,9 @@ class LineStrip(gloo.VertexBuffer):
         self._program = Program(self._vertex, self._fragment)
         self._scale = np.array([1.0, 0, 0, 1])
         self._offset = np.array([0.0, 0.0])
+        self._gScale = np.array([1.0, 0, 0, 1])
+        self._gOffset = np.array([0.0, 0.0])
+
         self._program['pColor'] = self._color
         self._program['coordinates'] = self
         self._program['uOffset'] = self._offset
@@ -49,6 +56,23 @@ class LineStrip(gloo.VertexBuffer):
 
     def setColor(self, color: np.ndarray):
         self._color = color
+        self._program['pColor'] = self._color
+
+    def setScale(self, scaleX: float, scaleY: float):
+        self._scale = np.array([scaleX, 0, 0, scaleY])
+        self._program['uScale'] = self._scale * self._gScale
+
+    def setOffset(self, offsetX: float, offsetY: float):
+        self._offset = np.array([offsetX, offsetY])
+        self._program['uOffset'] = self._offset + self._gOffset
+
+    def setGlobalScale(self, scaleX: float, scaleY: float):
+        self._gScale = np.array([scaleX, 0, 0, scaleY])
+        self._program['uScale'] = self._scale * self._gScale
+
+    def setGlobalOffset(self, offsetX: float, offsetY: float):
+        self._gOffset = np.array([offsetX, offsetY])
+        self._program['uOffset'] = self._offset + self._gOffset
 
     def setX(self, x: np.ndarray):
         self._x = x
@@ -132,28 +156,18 @@ class LineStrip(gloo.VertexBuffer):
         return
 
 class Pyglplot(app.Canvas):
+    """Pyglplot class
+    """
     def __init__(self):
         super().__init__(size=(512, 512), title='Rotating quad',
                          keys='interactive')
         # Build program & data
-        
+        self.lines = []
+        if len(self.lines) == 0:
+            self.lines.append(Line())
 
-        self._x = np.array([-1, 1])
-        self._y = np.array([1, -1])
-        self._rgb = np.array([1, 0.5, 0.5])
-
-        self.line1 = LineStrip()
-        self.line1.setXY(self._x, self._y)
-
-        self.line2 = LineStrip()
-        self.line2.setXY(self._x, self._y)
-        #self.line._program = Program(self._vertex, self._fragment)
-
-        #self._program = Program(self._vertex, self._fragment)
-        #self.line._program['pColor'] = self._rgb
-        #self.line._program['coordinates'] = self.line
-        #self.line._program['uOffset'] = [0.0, 0.0]
-        #self.line._program['uScale'] = np.array([1.0, 0, 0, 1])
+        self._gOffset = np.array([0.0, 0.0])
+        self._gScale = np.array([1.0, 0, 0, 1])
 
         gloo.set_viewport(0, 0, *self.physical_size)
         gloo.set_clear_color('black')
@@ -164,10 +178,18 @@ class Pyglplot(app.Canvas):
 
         self.show()
 
+    def setGlobalScale(self, scaleX: float, scaleY: float):
+        for line in self.lines:
+            line.setGlobalScale(scaleX, scaleY)
+
+    def setGlobalOffset(self, offsetX: float, offsetY: float):
+        for line in self.lines:
+            line.setGlobalOffset(offsetX, offsetY)
+
     def on_draw(self, event):
         gloo.clear()
-        self.line1._program.draw('line_strip')
-        self.line2._program.draw('line_strip')
+        for line in self.lines:
+            line._program.draw(line._mode)
 
     def on_resize(self, event):
         width, height = event.physical_size
