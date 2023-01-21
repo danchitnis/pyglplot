@@ -1,3 +1,5 @@
+[![PyPI version](https://badge.fury.io/py/pyglplot.svg)](https://badge.fury.io/py/pyglplot)
+
 # pyglplot
  
 A high-performance OpenGL plotting library for Python. Works in Jupiter notebooks and standalone Python scripts. Based on the JavaScript library [webgl-plot](https://github.com/danchitnis/webgl-plot) and build upon [vispy](https://github.com/vispy/vispy) especially for plotting realtime line, scatter and histogram plots. Although other plotting libraries like [vispy](https://github.com/vispy/vispy) have plotting capabilities, pyglplot focuses on a simple and portable interface for plotting realtime data. The main uses are plotting realtime data from sensors and instruments, including streaming devices such as microphones and cameras.
