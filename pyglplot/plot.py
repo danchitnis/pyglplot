@@ -52,6 +52,8 @@ class Line(gloo.VertexBuffer):
         self._program['uOffset'] = self._offset
         self._program['uScale'] = self._scale
 
+        self._update()
+
     def setColor(self, color: np.ndarray):
         self._color = color
         self._program['pColor'] = self._color
@@ -71,14 +73,6 @@ class Line(gloo.VertexBuffer):
     def setGlobalOffset(self, offsetX: float, offsetY: float):
         self._gOffset = np.array([offsetX, offsetY])
         self._program['uOffset'] = self._offset + self._gOffset
-
-    def setX(self, x: np.ndarray):
-        self._x = x
-        self._update()
-
-    def setY(self, y: np.ndarray):
-        self._y = y
-        self._update()
 
     def setXY(self, x: np.ndarray, y: np.ndarray):
         self._x = x
@@ -157,11 +151,11 @@ class Line(gloo.VertexBuffer):
 class Canvas(app.Canvas):
     """Pyglplot class
     """
-    def __init__(self):
-        super().__init__(size=(512, 512), title='Rotating quad',
+    def __init__(self, lines: list[Line]):
+        super().__init__(size=(512, 512), title='Pyglplot',
                          keys='interactive')
         # Build program & data
-        self.lines = []
+        self.lines = lines
         if len(self.lines) == 0:
             self.lines.append(Line())
 
@@ -196,9 +190,12 @@ class Canvas(app.Canvas):
 
 
     
-    def eventLoop(self):
+    def _eventLoop(self):
         pass
 
+    def setEventLoop(self, eventLoop):
+        self._eventLoop = eventLoop
+
     def on_timer(self, event):
-        self.eventLoop()
+        self._eventLoop()
         self.update()

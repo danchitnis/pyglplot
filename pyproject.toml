@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyglplot"
-version = "0.0.3"
+version = "0.0.4"
 authors = [
   { name="Danial Chitnis", email="d.chitnis@ed.ac.uk" },
 ]
@@ -15,6 +15,13 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+]
+dependencies = [
+  "numpy",
+  "vispy",
+  "jupyter_rfb",
+  "pillow",
+  "glfw",
 ]
 
 [project.urls]
