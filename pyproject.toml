@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyglplot"
-version = "0.0.1"
+version = "0.0.3"
 authors = [
   { name="Danial Chitnis", email="d.chitnis@ed.ac.uk" },
 ]
@@ -28,5 +28,6 @@ exclude = [
   "test/**",
   ".github",
   "docs",
-  "temp"
+  "temp",
+  ".vscode"
 ]

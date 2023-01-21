@@ -11,8 +11,6 @@ from vispy.gloo import Program
 import numpy as np
 
 
-
-
 class Line(gloo.VertexBuffer):
     """Line class
     """
@@ -155,7 +153,8 @@ class Line(gloo.VertexBuffer):
     def __str__(self):
         return
 
-class Pyglplot(app.Canvas):
+
+class Canvas(app.Canvas):
     """Pyglplot class
     """
     def __init__(self):
