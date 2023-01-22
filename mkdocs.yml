@@ -1,0 +1,50 @@
+# mkdocs.yml
+# pip install mkdocstrings mkdocs-material
+# https://mkdocstrings.github.io/python/customization/
+# https://squidfunk.github.io/mkdocs-material
+
+site_name: pyglplot
+
+repo_url: https://github.com/danchitnis/pyglplot
+
+repo_name: danchitnis/pyglplot
+
+theme:
+  name: "material"
+  features:
+    - navigation.instant
+    - navigation.tracking
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+markdown_extensions:
+  - pymdownx.betterem
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          import:
+            - https://docs.python-requests.org/en/master/objects.inv
