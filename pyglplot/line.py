@@ -2,38 +2,36 @@ import glfw
 from OpenGL import GL as gl
 import numpy as np
 
-class Roll():
+class Line():
     
-    def __init__(self, rollBufferSize = 100):
+    def __init__(self, lineSize = 100):
 
-        self.rollBufferSize = rollBufferSize
+        self.lineSize = lineSize
 
         vertex_shader_text = """
         # version 330
         layout(location = 1) in vec2 a_position;
-        uniform float uShift;
-        uniform vec4 uColor;
+        layout(location = 2) in vec3 a_color;
 
-
+        out vec3 vColor;
             
         void main(void) {
-            vec2 shiftedPosition = a_position - vec2(uShift, 0);
-            gl_Position = vec4(shiftedPosition, 0, 1);
-
+            gl_Position = vec4(a_position, 0, 1);
+            vColor = a_color/ vec3(255.0, 255.0, 255.0);
         }
         """
 
         fragment_shader_text = """
         # version 330
-        precision mediump float;  
+        precision mediump float;
+        in vec3 vColor;
+        out vec4 outColor;
+
         void main()
         {
-            gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+            outColor = vec4(vColor,0.7);
         }
         """
-
-
-        self.vertex_buffer = np.zeros( (self.rollBufferSize + 2) * 2, dtype=np.uint32)
 
         if not glfw.init():
             exit()
@@ -80,65 +78,78 @@ class Roll():
         gl.glAttachShader(self.program, fragment_shader)
         gl.glLinkProgram(self.program)
 
+
+        self.color_buffer = np.zeros( self.lineSize * 3, dtype=np.uint8)
+
+        self.cbo = gl.glGenBuffers(1)
+
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.cbo)
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, self.color_buffer.nbytes, self.color_buffer, gl.GL_STATIC_DRAW)
+
+        self.colorLocation = gl.glGetAttribLocation(self.program, "a_color")
+        gl.glVertexAttribPointer(self.colorLocation, 3, gl.GL_UNSIGNED_BYTE, gl.GL_FALSE, 0, None)
+        gl.glEnableVertexAttribArray(self.colorLocation)
+
+        
+        self.vertex_buffer = np.zeros( self.lineSize * 2, dtype=np.uint32)
+
+
         self.vbo = gl.glGenBuffers(1)
 
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, self.vertex_buffer.nbytes, self.vertex_buffer, gl.GL_STATIC_DRAW)
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, self.vertex_buffer.nbytes, self.vertex_buffer, gl.GL_DYNAMIC_DRAW)
 
         self.positionLocation = gl.glGetAttribLocation(self.program, "a_position")
         gl.glVertexAttribPointer(self.positionLocation, 2, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
         gl.glEnableVertexAttribArray(self.positionLocation)
 
-        self.uShiftLocation = gl.glGetUniformLocation(self.program, "uShift")
+        
+        self.xy = np.zeros( self.lineSize * 2, dtype=np.float32)
 
         gl.glUseProgram(self.program)
 
         gl.glClearColor(0.1, 0.1, 0.1, 1.0)
 
-        self.shift = 0
-        self.dataX = 1
-        self.dataIndex = 0
-
-        self.lastDataX = 0
-        self.lastDataY = 0
+        self.updateColor(255, 255, 0)
 
 
+    def updateColor(self, r, g, b):
+        self.color_buffer[:] = r
+        self.color_buffer[1::3] = g
+        self.color_buffer[2::3] = b
 
-    def addPoint(self, y):
-        bfSize = self.rollBufferSize + 2
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.cbo)
 
-        self.shift += 2 / self.rollBufferSize
-        self.dataX += 2 / self.rollBufferSize
+        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.color_buffer)
 
-        gl.glUniform1f(self.uShiftLocation, self.shift)
+        gl.glEnableVertexAttribArray(self.colorLocation)
+
+
+
+    def updateLine(self, x: np.ndarray, y: np.ndarray):
+               
+        self.xy[0::2] = x
+        self.xy[1::2] = y
+        
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
 
-        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, self.dataIndex *2 *4, np.array([self.dataX, y], dtype=np.float32))
-
-        if self.dataIndex == self.rollBufferSize - 1:
-            self.lastDataX = self.dataX
-            self.lastDataY = y
-
-        if self.dataIndex == 0 and self.lastDataX != 0:
-            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, self.rollBufferSize * 2 * 4, np.array([self.lastDataX, self.lastDataY, self.dataX, y], dtype=np.float32))
-
+        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.xy)
 
         gl.glEnableVertexAttribArray(self.positionLocation)
 
-        self.dataIndex = (self.dataIndex + 1) % self.rollBufferSize
     
+    def updateEmpty():
+        pass
 
-
-    def run(self, updateFunc):
+    def run(self, updateFunc = updateEmpty):
         while not glfw.window_should_close(self.window):
             # Render here, e.g. using pyOpenGL
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 
             updateFunc()
 
-            gl.glDrawArrays(gl.GL_LINE_STRIP, 0, self.dataIndex)
-            gl.glDrawArrays(gl.GL_LINE_STRIP, self.dataIndex, self.rollBufferSize - self.dataIndex)
-            gl.glDrawArrays(gl.GL_LINE_STRIP, self.rollBufferSize, 2)
+            gl.glDrawArrays(gl.GL_LINE_STRIP, 0, self.lineSize)
+        
 
             # Swap front and back buffers
             glfw.swap_buffers(self.window)

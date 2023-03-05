@@ -1,11 +1,11 @@
-import repackage
-repackage.add_path('/home/danial/code/pyglplot/')
+#import repackage
+#repackage.add_path('/home/danial/code/pyglplot/')
 
 from pyglplot import roll
 import numpy as np
 
 
-plotRoll = roll.roll(1000)
+plotRoll = roll.Roll(1000)
 
 y = 0
 
