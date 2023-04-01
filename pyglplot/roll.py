@@ -12,14 +12,17 @@ class Roll():
         vertex_shader_text = """
         # version 330
         layout(location = 1) in vec2 a_position;
+        layout(location = 2) in vec3 a_color;
+
         uniform float uShift;
-        uniform vec4 uColor;
 
-
+        out vec3 vColor;
             
         void main(void) {
             vec2 shiftedPosition = a_position - vec2(uShift, 0);
             gl_Position = vec4(shiftedPosition, 0, 1);
+
+            vColor = a_color / vec3(255.0, 255.0, 255.0);
 
         }
         """
@@ -27,14 +30,18 @@ class Roll():
         fragment_shader_text = """
         # version 330
         precision mediump float;  
+        in vec3 vColor;
+        out vec4 outColor;
+        
         void main()
         {
-            gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+            gl_FragColor = vec4(vColor, 0.8);
         }
         """
 
 
         self.vertex_buffer = np.zeros( (self.rollBufferSize + 2) * 2 * self.numLines, dtype=np.uint32)
+        self.color_buffer = np.ones( (self.rollBufferSize + 2) * 3 * self.numLines, dtype=np.uint8) * 255
 
         if not glfw.init():
             exit()
@@ -81,10 +88,23 @@ class Roll():
         gl.glAttachShader(self.program, fragment_shader)
         gl.glLinkProgram(self.program)
 
+        
+        
+        self.cbo = gl.glGenBuffers(1)
+
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.cbo)
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, self.color_buffer.nbytes, self.color_buffer, gl.GL_STATIC_DRAW)
+
+        self.colorLocation = gl.glGetAttribLocation(self.program, "a_color")
+        gl.glVertexAttribPointer(self.colorLocation, 3, gl.GL_UNSIGNED_BYTE, gl.GL_FALSE, 0, None)
+        gl.glEnableVertexAttribArray(self.colorLocation)
+
+
+
         self.vbo = gl.glGenBuffers(1)
 
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, self.vertex_buffer.nbytes, self.vertex_buffer, gl.GL_STATIC_DRAW)
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, self.vertex_buffer.nbytes, self.vertex_buffer, gl.GL_DYNAMIC_DRAW)
 
         self.positionLocation = gl.glGetAttribLocation(self.program, "a_position")
         gl.glVertexAttribPointer(self.positionLocation, 2, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
@@ -130,6 +150,16 @@ class Roll():
 
         
         self.dataIndex = (self.dataIndex + 1) % self.rollBufferSize
+
+    def setLineColor(self, color, line):
+        gl.glUseProgram(self.program)
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.cbo)
+
+        for i in range(self.rollBufferSize + 2):
+            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, (self.rollBufferSize + 2)*line*3 + i*3, np.array(color, dtype=np.uint8))
+
+        gl.glEnableVertexAttribArray(self.colorLocation)
+
     
 
 

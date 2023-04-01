@@ -7,6 +7,10 @@ import numpy as np
 
 plotRoll = roll.Roll(1000, 3)
 
+plotRoll.setLineColor(np.array([255, 255, 0]), 0)
+plotRoll.setLineColor(np.array([0, 255, 255]), 1)
+plotRoll.setLineColor(np.array([255, 0, 255]), 2)
+
 y = 0
 
 def update():
@@ -17,7 +21,7 @@ def update():
     if y < -1:
         y = -1
 
-    plotRoll.addPoint(np.array([y, y*0.5, y*0.25]))
+    plotRoll.addPoint(np.array([y, y+0.1, y-0.1]))
 
 
 plotRoll.run(update)
