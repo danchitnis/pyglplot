@@ -4,9 +4,10 @@ import numpy as np
 
 class Roll():
     
-    def __init__(self, rollBufferSize = 100):
+    def __init__(self, rollBufferSize = 100, numLines = 1):
 
         self.rollBufferSize = rollBufferSize
+        self.numLines = numLines
 
         vertex_shader_text = """
         # version 330
@@ -33,7 +34,7 @@ class Roll():
         """
 
 
-        self.vertex_buffer = np.zeros( (self.rollBufferSize + 2) * 2, dtype=np.uint32)
+        self.vertex_buffer = np.zeros( (self.rollBufferSize + 2) * 2 * self.numLines, dtype=np.uint32)
 
         if not glfw.init():
             exit()
@@ -99,8 +100,8 @@ class Roll():
         self.dataX = 1
         self.dataIndex = 0
 
-        self.lastDataX = 0
-        self.lastDataY = 0
+        self.lastDataX = np.zeros(numLines)
+        self.lastDataY = np.zeros(numLines)
 
 
 
@@ -113,18 +114,21 @@ class Roll():
         gl.glUniform1f(self.uShiftLocation, self.shift)
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
 
-        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, self.dataIndex *2 *4, np.array([self.dataX, y], dtype=np.float32))
+        for i in range(self.numLines):
+            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, (self.dataIndex + bfSize*i) *2 *4, np.array([self.dataX, y[i]], dtype=np.float32))
 
         if self.dataIndex == self.rollBufferSize - 1:
-            self.lastDataX = self.dataX
-            self.lastDataY = y
+            for i in range(self.numLines):
+                self.lastDataX[i] = self.dataX
+                self.lastDataY[i] = y[i]
 
-        if self.dataIndex == 0 and self.lastDataX != 0:
-            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, self.rollBufferSize * 2 * 4, np.array([self.lastDataX, self.lastDataY, self.dataX, y], dtype=np.float32))
-
+        if self.dataIndex == 0 and self.lastDataX[0] != 0:
+            for i in range(self.numLines):
+                gl.glBufferSubData(gl.GL_ARRAY_BUFFER, (self.rollBufferSize + bfSize*i) * 2 * 4, np.array([self.lastDataX[i], self.lastDataY[i], self.dataX, y[i]], dtype=np.float32))
 
         gl.glEnableVertexAttribArray(self.positionLocation)
 
+        
         self.dataIndex = (self.dataIndex + 1) % self.rollBufferSize
     
 
@@ -136,9 +140,12 @@ class Roll():
 
             updateFunc()
 
-            gl.glDrawArrays(gl.GL_LINE_STRIP, 0, self.dataIndex)
-            gl.glDrawArrays(gl.GL_LINE_STRIP, self.dataIndex, self.rollBufferSize - self.dataIndex)
-            gl.glDrawArrays(gl.GL_LINE_STRIP, self.rollBufferSize, 2)
+            bfsize = self.rollBufferSize + 2
+
+            for i in range(self.numLines):
+                gl.glDrawArrays(gl.GL_LINE_STRIP, i*bfsize, self.dataIndex)
+                gl.glDrawArrays(gl.GL_LINE_STRIP, i*bfsize + self.dataIndex, self.rollBufferSize - self.dataIndex)
+                gl.glDrawArrays(gl.GL_LINE_STRIP, i*bfsize + self.rollBufferSize, 2)
 
             # Swap front and back buffers
             glfw.swap_buffers(self.window)

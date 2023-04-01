@@ -1,11 +1,11 @@
-#import repackage
-#repackage.add_path('/home/danial/code/pyglplot/')
+import repackage
+repackage.add_path('/home/danial/code/pyglplot/')
 
 from pyglplot import roll
 import numpy as np
 
 
-plotRoll = roll.Roll(1000)
+plotRoll = roll.Roll(1000, 3)
 
 y = 0
 
@@ -17,7 +17,7 @@ def update():
     if y < -1:
         y = -1
 
-    plotRoll.addPoint(y)
+    plotRoll.addPoint(np.array([y, y*0.5, y*0.25]))
 
 
 plotRoll.run(update)
