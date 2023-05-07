@@ -112,6 +112,13 @@ class Line():
 
         self.updateColor(255, 255, 0)
 
+        glfw.set_window_size_callback(self.window, self.on_resize)
+
+    
+    def on_resize(self, window, width, height):
+        gl.glViewport(0, 0, width, height)
+
+
 
     def updateColor(self, r, g, b):
         self.color_buffer[:] = r

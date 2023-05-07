@@ -1,28 +1,48 @@
-import repackage
-repackage.add_path('/home/danial/code/pyglplot/')
+#import repackage
+#repackage.add_path('/home/danial/code/pyglplot/')
 
 from pyglplot import roll
 import numpy as np
 
+import time
 
-plotRoll = roll.Roll(1000, 3)
+numLines = 100
 
-plotRoll.setLineColor(np.array([255, 255, 0]), 0)
-plotRoll.setLineColor(np.array([0, 255, 255]), 1)
-plotRoll.setLineColor(np.array([255, 0, 255]), 2)
+plotRoll = roll.Roll(1000, numLines=numLines)
 
-y = 0
+
+for i in range(numLines):
+    plotRoll.setLineColor([np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)], i)
+
+
+y = np.zeros(numLines)
+
+timeStamp = []
+
+k = 0.5
+
+counter = 0
+
 
 def update():
-    global y
-    y += np.random.rand() * 0.1 - 0.05
-    if y > 1:
-        y = 1
-    if y < -1:
-        y = -1
+    timeStamp.append(time.perf_counter())
+    global counter
 
-    plotRoll.addPoint(np.array([y, y+0.1, y-0.1]))
+    
+    
+    for i in range(numLines):
+        y[i] = np.sin(counter/(numLines*100)+ i*k)
+
+    plotRoll.addPoint(y)
+
+    
+    counter += 1
+
+    
+
+    if len(timeStamp) > 100:
+        print(int(1/np.mean(np.diff(timeStamp))))
+        timeStamp.clear()
 
 
 plotRoll.run(update)
-

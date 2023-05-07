@@ -1,8 +1,5 @@
 //https://stackoverflow.com/questions/54015604/disable-python-import-sorting-in-vscode
 {
-    "python.formatting.autopep8Args": [
-        "[\"--ignore\",\"E402\"]  "
-    ],
     "jupyter.widgetScriptSources": [
         "jsdelivr.com",
         "unpkg.com"
@@ -16,5 +13,10 @@
         "tag:yaml.org,2002:python/name:materialx.emoji.to_svg",
         "tag:yaml.org,2002:python/name:materialx.emoji.twemoji",
         "tag:yaml.org,2002:python/name:pymdownx.superfences.fence_code_format"
+    ],
+    "python.formatting.provider": "none",
+    "python.formatting.autopep8Args": [
+        "--ignore",
+        "E402"
     ]
 }

@@ -123,6 +123,11 @@ class Roll():
         self.lastDataX = np.zeros(numLines)
         self.lastDataY = np.zeros(numLines)
 
+        glfw.set_window_size_callback(self.window, self.resize)
+
+    
+    def resize(self, window, width, height):
+        gl.glViewport(0, 0, width, height)
 
 
     def addPoint(self, y):
