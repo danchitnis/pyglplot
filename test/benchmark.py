@@ -6,7 +6,7 @@ import time
 
 lineSize = 2000
 
-lineNum = 200
+lineNum = 350
 
 vertex_shader_text = """
 # version 330
@@ -140,10 +140,12 @@ updateColor()
 glfw.set_window_size_callback(window, on_resize)
 
 
-data = np.zeros(lineSize * 2, dtype=np.float32)
 
+data = np.zeros(lineSize * 2, dtype=np.float32)
 data[0::2] = np.linspace(-1, 1, lineSize)
 
+#data = np.zeros(lineSize * 2 * lineNum, dtype=np.float32)
+#data[0::2] = np.tile(np.linspace(-1, 1, lineSize), lineNum)
 
 
 def updateLines():
@@ -155,8 +157,9 @@ def updateLines():
     y0 = np.linspace(0, 1, lineNum) + phase
 
     for i in range(lineNum):
-        y = y0[i] + np.linspace(0, 1, lineSize) * 0.1
-        yy = np.mod(y, 1) * 2 - 1
+        y = np.add(y0[i], np.multiply(np.linspace(0, 1, lineSize), 0.1))
+        #yy = np.mod(y, 1) * 2 - 1
+        yy = np.subtract(y, np.floor(y)) * 2 - 1
 
         data[1::2] = yy
 
@@ -164,6 +167,26 @@ def updateLines():
 
 
     gl.glEnableVertexAttribArray(positionLocation)
+
+
+
+
+def updateLinesNumpyic():
+    gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo)
+
+    phase = glfw.get_time() * 0.1
+
+    y0 = np.linspace(0, 1, lineNum, endpoint=False) + phase
+
+    y = y0[:, np.newaxis] + np.linspace(0, 1, lineSize) * 0.1
+    yy = np.mod(y, 1) * 2 - 1
+
+    data[1::2] = yy.flatten()
+
+    gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, data.nbytes, data)
+
+    gl.glEnableVertexAttribArray(positionLocation)
+
 
 
 elasped_time = 0
@@ -178,6 +201,7 @@ while not glfw.window_should_close(window):
     gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 
     updateLines()
+    #updateLinesNumpyic()
 
     for i in range(lineNum):
         gl.glDrawArrays(gl.GL_LINE_STRIP, i * lineSize, lineSize)
