@@ -1,14 +1,14 @@
 #import repackage
-#repackage.add_path('/home/danial/code/pyglplot/')
+#repackage.add_path('E:\\Code\\pyglplot\\')
 
 from pyglplot import roll
 import numpy as np
 
 import time
 
-numLines = 100
+numLines = 3
 
-plotRoll = roll.Roll(1000, numLines=numLines)
+plotRoll = roll.Roll(2000, numLines=numLines)
 
 
 for i in range(numLines):
@@ -19,19 +19,18 @@ y = np.zeros(numLines)
 
 timeStamp = []
 
-k = 0.5
+k = 1
 
 counter = 0
 
-
 def update():
     timeStamp.append(time.perf_counter())
-    global counter
 
-    
+    global counter
     
     for i in range(numLines):
-        y[i] = np.sin(counter/(numLines*100)+ i*k)
+        a = y[i] + 0.01 * (i+1) / numLines
+        y[i] = a - np.round(a)
 
     plotRoll.addPoint(y)
 

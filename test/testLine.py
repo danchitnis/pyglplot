@@ -1,5 +1,5 @@
 #import repackage
-#repackage.add_path('/home/danial/code/pyglplot/')
+#repackage.add_path('E:\\Code\\pyglplot\\')
 
 from pyglplot import line
 import numpy as np
