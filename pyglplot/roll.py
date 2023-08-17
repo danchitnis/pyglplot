@@ -2,12 +2,14 @@ import glfw
 from OpenGL import GL as gl
 import numpy as np
 
+from . import common
+
 class Roll():
     
-    def __init__(self, rollBufferSize = 100, numLines = 1):
+    def __init__(self, roll_buffer_size = 100, num_lines = 1, width = 1280, height = 800, title = "pyglplot", context_api = "native"):
 
-        self.rollBufferSize = rollBufferSize
-        self.numLines = numLines
+        self.roll_buffer_size = roll_buffer_size
+        self.num_lines = num_lines
 
         vertex_shader_text = """
         # version 330
@@ -39,54 +41,14 @@ class Roll():
         }
         """
 
-
-        self.vertex_buffer = np.zeros( (self.rollBufferSize + 2) * 2 * self.numLines, dtype=np.uint32)
-        self.color_buffer = np.ones( (self.rollBufferSize + 2) * 3 * self.numLines, dtype=np.uint8) * 255
-
-        if not glfw.init():
-            exit()
-        # Create a windowed mode window and its OpenGL context
-        glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 1)
-        glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 5)
-
-        #glfw.window_hint(glfw.CONTEXT_CREATION_API, glfw.NATIVE_CONTEXT_API)
-        glfw.window_hint(glfw.CONTEXT_CREATION_API, glfw.EGL_CONTEXT_API)
-        #glfw.window_hint(glfw.CONTEXT_CREATION_API, glfw.OSMESA_CONTEXT_API)
-
-
-        self.window = glfw.create_window(1280, 800, "pyglplot", None, None)
-        if not self.window:
-            glfw.terminate()
-            exit()
-        # Make the window's context current
-        glfw.make_context_current(self.window)
-        glfw.swap_interval(1)
-
-        print(glfw.get_version_string())
-        print(gl.glGetString(gl.GL_VERSION))
-
-        vertex_shader = gl.glCreateShader(gl.GL_VERTEX_SHADER)
-        gl.glShaderSource(vertex_shader, vertex_shader_text)
-        gl.glCompileShader(vertex_shader)
-
-        success = gl.glGetShaderiv(vertex_shader, gl.GL_COMPILE_STATUS)
-        if not success:
-            print("Shader compilation failed")
-            print(gl.glGetShaderInfoLog(vertex_shader))
         
-        fragment_shader = gl.glCreateShader(gl.GL_FRAGMENT_SHADER)
-        gl.glShaderSource(fragment_shader, fragment_shader_text)
-        gl.glCompileShader(fragment_shader)
+        self.window = common.create_window(width, height, title, context_api)
 
-        success = gl.glGetShaderiv(fragment_shader, gl.GL_COMPILE_STATUS)
-        if not success:
-            print("Shader compilation failed")
-            print(gl.glGetShaderInfoLog(fragment_shader))
-        
-        self.program = gl.glCreateProgram()
-        gl.glAttachShader(self.program, vertex_shader)
-        gl.glAttachShader(self.program, fragment_shader)
-        gl.glLinkProgram(self.program)
+        self.program = common.create_shaders(vertex_shader_text, fragment_shader_text)
+
+
+        self.vertex_buffer = np.zeros( (self.roll_buffer_size + 2) * 2 * self.num_lines, dtype=np.uint32)
+        self.color_buffer = np.ones( (self.roll_buffer_size + 2) * 3 * self.num_lines, dtype=np.uint8) * 255
 
         
         
@@ -117,11 +79,11 @@ class Roll():
         gl.glClearColor(0.1, 0.1, 0.1, 1.0)
 
         self.shift = 0
-        self.dataX = 1
-        self.dataIndex = 0
+        self.data_x = 1
+        self.data_index = 0
 
-        self.lastDataX = np.zeros(numLines)
-        self.lastDataY = np.zeros(numLines)
+        self.last_data_X = np.zeros(num_lines)
+        self.last_data_y = np.zeros(num_lines)
 
         glfw.set_window_size_callback(self.window, self.resize)
 
@@ -130,57 +92,57 @@ class Roll():
         gl.glViewport(0, 0, width, height)
 
 
-    def addPoint(self, y):
-        bfSize = self.rollBufferSize + 2
+    def add_point(self, y):
+        bf_size = self.roll_buffer_size + 2
 
-        self.shift += 2 / self.rollBufferSize
-        self.dataX += 2 / self.rollBufferSize
+        self.shift += 2 / self.roll_buffer_size
+        self.data_x += 2 / self.roll_buffer_size
 
         gl.glUniform1f(self.uShiftLocation, self.shift)
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
 
-        for i in range(self.numLines):
-            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, (self.dataIndex + bfSize*i) *2 *4, np.array([self.dataX, y[i]], dtype=np.float32))
+        for i in range(self.num_lines):
+            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, (self.data_index + bf_size*i) *2 *4, np.array([self.data_x, y[i]], dtype=np.float32))
 
-        if self.dataIndex == self.rollBufferSize - 1:
-            for i in range(self.numLines):
-                self.lastDataX[i] = self.dataX
-                self.lastDataY[i] = y[i]
+        if self.data_index == self.roll_buffer_size - 1:
+            for i in range(self.num_lines):
+                self.last_data_X[i] = self.data_x
+                self.last_data_y[i] = y[i]
 
-        if self.dataIndex == 0 and self.lastDataX[0] != 0:
-            for i in range(self.numLines):
-                gl.glBufferSubData(gl.GL_ARRAY_BUFFER, (self.rollBufferSize + bfSize*i) * 2 * 4, np.array([self.lastDataX[i], self.lastDataY[i], self.dataX, y[i]], dtype=np.float32))
+        if self.data_index == 0 and self.last_data_X[0] != 0:
+            for i in range(self.num_lines):
+                gl.glBufferSubData(gl.GL_ARRAY_BUFFER, (self.roll_buffer_size + bf_size*i) * 2 * 4, np.array([self.last_data_X[i], self.last_data_y[i], self.data_x, y[i]], dtype=np.float32))
 
         gl.glEnableVertexAttribArray(self.positionLocation)
 
         
-        self.dataIndex = (self.dataIndex + 1) % self.rollBufferSize
+        self.data_index = (self.data_index + 1) % self.roll_buffer_size
 
-    def setLineColor(self, color, line):
+    def update_line_color(self, color, line):
         gl.glUseProgram(self.program)
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.cbo)
 
-        for i in range(self.rollBufferSize + 2):
-            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, (self.rollBufferSize + 2)*line*3 + i*3, np.array(color, dtype=np.uint8))
+        for i in range(self.roll_buffer_size + 2):
+            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, (self.roll_buffer_size + 2)*line*3 + i*3, np.array(color, dtype=np.uint8))
 
         gl.glEnableVertexAttribArray(self.colorLocation)
 
     
 
 
-    def run(self, updateFunc):
+    def run(self, update_function):
         while not glfw.window_should_close(self.window):
             # Render here, e.g. using pyOpenGL
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 
-            updateFunc()
+            update_function()
 
-            bfsize = self.rollBufferSize + 2
+            bfsize = self.roll_buffer_size + 2
 
-            for i in range(self.numLines):
-                gl.glDrawArrays(gl.GL_LINE_STRIP, i*bfsize, self.dataIndex)
-                gl.glDrawArrays(gl.GL_LINE_STRIP, i*bfsize + self.dataIndex, self.rollBufferSize - self.dataIndex)
-                gl.glDrawArrays(gl.GL_LINE_STRIP, i*bfsize + self.rollBufferSize, 2)
+            for i in range(self.num_lines):
+                gl.glDrawArrays(gl.GL_LINE_STRIP, i*bfsize, self.data_index)
+                gl.glDrawArrays(gl.GL_LINE_STRIP, i*bfsize + self.data_index, self.roll_buffer_size - self.data_index)
+                gl.glDrawArrays(gl.GL_LINE_STRIP, i*bfsize + self.roll_buffer_size, 2)
 
             # Swap front and back buffers
             glfw.swap_buffers(self.window)

@@ -6,9 +6,10 @@ from . import common
 
 class Line():
     
-    def __init__(self, line_size = 100, width = 1280, height = 800, title = "pyglplot", context_api = "native"):
+    def __init__(self, line_size = 100, line_number = 1, width = 1280, height = 800, title = "pyglplot", context_api = "native"):
 
         self.line_size = line_size
+        self.line_number = line_number
 
         vertex_shader_text = """
         # version 330
@@ -39,7 +40,7 @@ class Line():
 
         self.program = common.create_shaders(vertex_shader_text, fragment_shader_text)
 
-        self.color_buffer = np.zeros( self.line_size * 3, dtype=np.uint8)
+        self.color_buffer = np.zeros( self.line_size * 3 * line_number, dtype=np.uint8)
 
         self.cbo = gl.glGenBuffers(1)
 
@@ -51,7 +52,7 @@ class Line():
         gl.glEnableVertexAttribArray(self.color_location)
 
         
-        self.vertex_buffer = np.zeros( self.line_size * 2, dtype=np.uint32)
+        self.vertex_buffer = np.zeros( self.line_size * 2 * self.line_number, dtype=np.float32)
 
 
         self.vbo = gl.glGenBuffers(1)
@@ -64,13 +65,12 @@ class Line():
         gl.glEnableVertexAttribArray(self.position_location)
 
         
-        self.xy = np.zeros( self.line_size * 2, dtype=np.float32)
 
         gl.glUseProgram(self.program)
 
         gl.glClearColor(0.1, 0.1, 0.1, 1.0)
 
-        self.update_color(255, 255, 0)
+        self.buffer_single_line = np.zeros(self.line_size*2, dtype=np.float32)
 
         glfw.set_window_size_callback(self.window, self.on_resize)
 
@@ -80,27 +80,52 @@ class Line():
 
 
 
-    def update_color(self, r, g, b):
-        self.color_buffer[:] = r
-        self.color_buffer[1::3] = g
-        self.color_buffer[2::3] = b
+    def update_color(self, index_line: int, rgb: np.ndarray):
 
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.cbo)
 
-        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.color_buffer)
+        color = np.zeros(self.line_size*3, dtype=np.uint8)
 
+        color[0::3] = rgb[0]
+        color[1::3] = rgb[1]
+        color[2::3] = rgb[2]
+
+        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, index_line*self.line_size*3, color)
+        
         gl.glEnableVertexAttribArray(self.color_location)
 
 
 
-    def update_line(self, x: np.ndarray, y: np.ndarray):
-               
-        self.xy[0::2] = x
-        self.xy[1::2] = y
-        
+    def update_line_xy(self, index_line: int, x: np.ndarray, y: np.ndarray):
+
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
 
-        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.xy)
+        self.buffer_single_line[0::2] = x
+        self.buffer_single_line[1::2] = y
+
+        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, index_line*self.buffer_single_line.nbytes, self.buffer_single_line)
+
+        gl.glEnableVertexAttribArray(self.position_location)
+
+    
+    def update_line_x(self, index_line: int, x: np.ndarray):
+
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
+
+        self.buffer_single_line[0::2] = x
+
+        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, index_line*self.buffer_single_line.nbytes, self.buffer_single_line)
+
+        gl.glEnableVertexAttribArray(self.position_location)
+
+    
+    def update_line_y(self, index_line: int, y: np.ndarray):
+
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
+
+        self.buffer_single_line[1::2] = y
+
+        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, index_line*self.buffer_single_line.nbytes, self.buffer_single_line)
 
         gl.glEnableVertexAttribArray(self.position_location)
 
@@ -115,9 +140,9 @@ class Line():
 
             update_function()
 
-            gl.glDrawArrays(gl.GL_LINE_STRIP, 0, self.line_size)
+            for i in range(self.line_number):
+                gl.glDrawArrays(gl.GL_LINE_STRIP, i*self.line_size, self.line_size)
         
-
             # Swap front and back buffers
             glfw.swap_buffers(self.window)
 

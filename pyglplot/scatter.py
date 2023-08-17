@@ -4,10 +4,10 @@ import numpy as np
 
 class Scatter():
     
-    def __init__(self, maxSqaureNum= 100, squareSize = 0.1):
+    def __init__(self, max_square_num= 100, square_size = 0.1, width = 1280, height = 800, title = "pyglplot", context_api = "native"):
 
-        self.maxSqaureNum = maxSqaureNum
-        self.squareSize = squareSize
+        self.max_square_num = max_square_num
+        self.square_size = square_size
 
         vertex_shader_text = """
         #version 330
@@ -42,8 +42,8 @@ class Scatter():
         """
 
 
-        self.squarePositions = np.zeros((self.maxSqaureNum * 2), dtype=np.float32)
-        self.colors = np.ones( (self.maxSqaureNum * 3), dtype=np.uint8) * np.uint8(255)
+        self.square_positions = np.zeros((self.max_square_num * 2), dtype=np.float32)
+        self.colors = np.ones( (self.max_square_num * 3), dtype=np.uint8) * np.uint8(255)
 
         if not glfw.init():
             exit()
@@ -93,53 +93,53 @@ class Scatter():
         
 
 
-        self.squareIndices = np.array([0, 1, 2, 2, 1, 3], dtype=np.uint8)
+        self.square_indices = np.array([0, 1, 2, 2, 1, 3], dtype=np.uint8)
 
         self.ebo = gl.glGenBuffers(1)
 
         gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
-        gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER, self.squareIndices.nbytes, self.squareIndices, gl.GL_STATIC_DRAW)
+        gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER, self.square_indices.nbytes, self.square_indices, gl.GL_STATIC_DRAW)
 
 
         self.vbo = gl.glGenBuffers(1)
 
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, self.squarePositions.nbytes, self.squarePositions, gl.GL_DYNAMIC_DRAW)
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, self.square_positions.nbytes, self.square_positions, gl.GL_DYNAMIC_DRAW)
 
-        self.positionLocation = gl.glGetAttribLocation(self.program, "aPos")
-        gl.glVertexAttribPointer(self.positionLocation, 2, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
-        gl.glVertexAttribDivisor(self.positionLocation, 1)
-        gl.glEnableVertexAttribArray(self.positionLocation)
+        self.position_location = gl.glGetAttribLocation(self.program, "aPos")
+        gl.glVertexAttribPointer(self.position_location, 2, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
+        gl.glVertexAttribDivisor(self.position_location, 1)
+        gl.glEnableVertexAttribArray(self.position_location)
 
-        self.initColor()
+        self.init_color()
 
         self.cbo = gl.glGenBuffers(1)
 
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.cbo)
         gl.glBufferData(gl.GL_ARRAY_BUFFER, self.colors.nbytes, self.colors, gl.GL_DYNAMIC_DRAW)
 
-        self.colorLocation = gl.glGetAttribLocation(self.program, "aColor")
-        gl.glVertexAttribPointer(self.colorLocation, 3, gl.GL_UNSIGNED_BYTE, gl.GL_FALSE, 0, None)
-        gl.glVertexAttribDivisor(self.colorLocation, 1)
-        gl.glEnableVertexAttribArray(self.colorLocation)
+        self.color_location = gl.glGetAttribLocation(self.program, "aColor")
+        gl.glVertexAttribPointer(self.color_location, 3, gl.GL_UNSIGNED_BYTE, gl.GL_FALSE, 0, None)
+        gl.glVertexAttribDivisor(self.color_location, 1)
+        gl.glEnableVertexAttribArray(self.color_location)
 
 
         
 
 
-        self.uSize = gl.glGetUniformLocation(self.program, "uSize")
-        self.uOffset = gl.glGetUniformLocation(self.program, "uOffset")
-        self.uScale = gl.glGetUniformLocation(self.program, "uScale")
+        self.u_size = gl.glGetUniformLocation(self.program, "uSize")
+        self.u_offset = gl.glGetUniformLocation(self.program, "uOffset")
+        self.u_scale = gl.glGetUniformLocation(self.program, "uScale")
 
         gl.glUseProgram(self.program)
 
-        self.windowSize = glfw.get_window_size(self.window)
-        print(self.windowSize)
-        self.aspectRatio = self.windowSize[0] / self.windowSize[1]
+        self.window_size = glfw.get_window_size(self.window)
+        print(self.window_size)
+        self.aspect_ratio = self.window_size[0] / self.window_size[1]
 
-        gl.glUniform1f(self.uSize, np.float32(squareSize))
-        gl.glUniform2f(self.uOffset, 0.0, 0.0)
-        gl.glUniformMatrix2fv(self.uScale, 1, gl.GL_FALSE, np.array([[float(1/self.aspectRatio), 0.0], [0.0, 1.0]], dtype=np.float32))
+        gl.glUniform1f(self.u_size, np.float32(square_size))
+        gl.glUniform2f(self.u_offset, 0.0, 0.0)
+        gl.glUniformMatrix2fv(self.u_scale, 1, gl.GL_FALSE, np.array([[float(1/self.aspect_ratio), 0.0], [0.0, 1.0]], dtype=np.float32))
 
 
         gl.glClearColor(0.1, 0.1, 0.1, 1.0)
@@ -150,66 +150,66 @@ class Scatter():
 
         glfw.set_window_size_callback(self.window, self.resize)
 
-        self.headIndex = 0
+        self.head_index = 0
 
     
     def resize(self, window, width, height):
         gl.glViewport(0, 0, width, height)
-        self.aspectRatio = width / height
-        self.windowSize = (width, height)
-        gl.glUniformMatrix2fv(self.uScale, 1, gl.GL_FALSE, np.array([[float(1/self.aspectRatio), 0.0], [0.0, 1.0]], dtype=np.float32))
+        self.aspect_ratio = width / height
+        self.window_size = (width, height)
+        gl.glUniformMatrix2fv(self.u_scale, 1, gl.GL_FALSE, np.array([[float(1/self.aspect_ratio), 0.0], [0.0, 1.0]], dtype=np.float32))
 
-    def initColor(self):
-        self.colors = np.random.randint(0, 255, (self.maxSqaureNum * 3), dtype=np.uint8)
+    def init_color(self):
+        self.colors = np.random.randint(0, 255, (self.max_square_num * 3), dtype=np.uint8)
 
 
-    def addPoint(self, pos:np.ndarray):
+    def add_point(self, pos:np.ndarray):
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, self.headIndex * 2 * 4, pos.nbytes, pos)
-        gl.glEnableVertexAttribArray(self.positionLocation)
+        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, self.head_index * 2 * 4, pos.nbytes, pos)
+        gl.glEnableVertexAttribArray(self.position_location)
 
-        self.headIndex = (self.headIndex + int(pos.size / 2)) % self.maxSqaureNum
+        self.head_index = (self.head_index + int(pos.size / 2)) % self.max_square_num
 
-    def addPosAndColor(self, pos:np.ndarray, color:np.ndarray):
+    def add_pos_and_color(self, pos:np.ndarray, color:np.ndarray):
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, self.headIndex * 2 * 4, pos.nbytes, pos)
-        gl.glEnableVertexAttribArray(self.positionLocation)
+        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, self.head_index * 2 * 4, pos.nbytes, pos)
+        gl.glEnableVertexAttribArray(self.position_location)
 
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.cbo)
-        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, self.headIndex * 3, color.nbytes, color)
-        gl.glEnableVertexAttribArray(self.colorLocation)
+        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, self.head_index * 3, color.nbytes, color)
+        gl.glEnableVertexAttribArray(self.color_location)
 
-        self.headIndex = (self.headIndex + int(pos.size / 2)) % self.maxSqaureNum
+        self.head_index = (self.head_index + int(pos.size / 2)) % self.max_square_num
 
-    def resetPos(self):
-        self.headIndex = 0
-        self.squarePositions = self.squarePositions * 0.0
+    def reset_pos(self):
+        self.head_index = 0
+        self.square_positions = self.square_positions * 0.0
 
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.squarePositions.nbytes, self.squarePositions)
-        gl.glEnableVertexAttribArray(self.positionLocation)
+        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.square_positions.nbytes, self.square_positions)
+        gl.glEnableVertexAttribArray(self.position_location)
 
-    def resetColor(self):
+    def reset_color(self):
         self.colors = self.colors * np.uint8(255)
 
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.cbo)
         gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.colors.nbytes, self.colors)
-        gl.glEnableVertexAttribArray(self.colorLocation)
+        gl.glEnableVertexAttribArray(self.color_location)
 
 
-    def updateEmpty():
+    def update_empty():
         pass
         
 
 
-    def run(self, updateFunc = updateEmpty):
+    def run(self, update_function = update_empty):
         while not glfw.window_should_close(self.window):
             # Render here, e.g. using pyOpenGL
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 
-            updateFunc()
+            update_function()
 
-            gl.glDrawElementsInstanced(gl.GL_TRIANGLES, self.squareIndices.size, gl.GL_UNSIGNED_BYTE, None, self.maxSqaureNum)
+            gl.glDrawElementsInstanced(gl.GL_TRIANGLES, self.square_indices.size, gl.GL_UNSIGNED_BYTE, None, self.max_square_num)
 
             # Swap front and back buffers
             glfw.swap_buffers(self.window)
