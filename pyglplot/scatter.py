@@ -3,6 +3,16 @@ from OpenGL import GL as gl
 import numpy as np
 
 class Scatter():
+    """Scatter plot class
+    
+    :param max_square_num: Maximum number of squares to be drawn, defaults to 100
+    :param square_size: Size of the square, defaults to 0.1
+    :param width: Width of the window, defaults to 1280
+    :param height: Height of the window, defaults to 800
+    :param title: Title of the window, defaults to "pyglplot"
+    :param context_api: OpenGL windowing method: "native", "egl", "osmesa", or "auto"
+
+    """
     
     def __init__(self, max_square_num= 100, square_size = 0.1, width = 1280, height = 800, title = "pyglplot", context_api = "native"):
 
@@ -163,14 +173,28 @@ class Scatter():
         self.colors = np.random.randint(0, 255, (self.max_square_num * 3), dtype=np.uint8)
 
 
-    def add_point(self, pos:np.ndarray):
+    def add_point(self, pos:np.ndarray) -> None:
+        """ Add a point to the plot.
+
+        :param pos: The position of the point to add.
+        :return: None
+
+        """
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
         gl.glBufferSubData(gl.GL_ARRAY_BUFFER, self.head_index * 2 * 4, pos.nbytes, pos)
         gl.glEnableVertexAttribArray(self.position_location)
 
         self.head_index = (self.head_index + int(pos.size / 2)) % self.max_square_num
 
-    def add_pos_and_color(self, pos:np.ndarray, color:np.ndarray):
+    def add_pos_and_color(self, pos:np.ndarray, color:np.ndarray) -> None:
+        """ Add a point and its color to the plot.
+
+        :param pos: The position of the point to add.
+        :param color: The color of the point to add.
+        :return: None
+
+        """
+
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
         gl.glBufferSubData(gl.GL_ARRAY_BUFFER, self.head_index * 2 * 4, pos.nbytes, pos)
         gl.glEnableVertexAttribArray(self.position_location)
@@ -181,7 +205,13 @@ class Scatter():
 
         self.head_index = (self.head_index + int(pos.size / 2)) % self.max_square_num
 
-    def reset_pos(self):
+    def reset_pos(self) -> None:
+        """ Reset the positions of all points to zero.
+
+        :return: None
+
+        """
+
         self.head_index = 0
         self.square_positions = self.square_positions * 0.0
 
@@ -189,7 +219,13 @@ class Scatter():
         gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, self.square_positions.nbytes, self.square_positions)
         gl.glEnableVertexAttribArray(self.position_location)
 
-    def reset_color(self):
+    def reset_color(self) -> None:
+        """ Reset the colors of all points to zero.
+
+        :return: None
+
+        """
+
         self.colors = self.colors * np.uint8(255)
 
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.cbo)
@@ -197,12 +233,20 @@ class Scatter():
         gl.glEnableVertexAttribArray(self.color_location)
 
 
-    def update_empty():
+    def _update_empty():
         pass
         
 
 
-    def run(self, update_function = update_empty):
+    def run(self, update_function = _update_empty) -> None:
+        """ Run the plot.
+
+        :param update_function: The function to call to update the plot.
+
+        :return: None
+
+        """
+
         while not glfw.window_should_close(self.window):
             # Render here, e.g. using pyOpenGL
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)

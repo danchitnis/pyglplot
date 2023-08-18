@@ -5,6 +5,16 @@ import numpy as np
 from . import common
 
 class Roll():
+    """Class to plot a rolling graph
+
+    :param roll_buffer_size: number of points to plot
+    :param num_lines: number of lines to plot
+    :param width: window width
+    :param height: window height
+    :param title: window title
+    :param context_api: OpenGL windowing method: "native", "egl", "osmesa", or "auto"
+
+    """
     
     def __init__(self, roll_buffer_size = 100, num_lines = 1, width = 1280, height = 800, title = "pyglplot", context_api = "native"):
 
@@ -92,7 +102,13 @@ class Roll():
         gl.glViewport(0, 0, width, height)
 
 
-    def add_point(self, y):
+    def add_point(self, y) -> None:
+        """Add a point to the plot
+
+        :param y: y value to plot
+
+        """
+
         bf_size = self.roll_buffer_size + 2
 
         self.shift += 2 / self.roll_buffer_size
@@ -118,19 +134,32 @@ class Roll():
         
         self.data_index = (self.data_index + 1) % self.roll_buffer_size
 
-    def update_line_color(self, color, line):
+    def update_line_color(self, index_line, color: np.ndarray,) -> None:
+        """Update the color of a line
+
+        :param index_line: index of the line to update
+        :param color: numpy array of 3 uint8 values (RGB) between 0 and 255 e.g.
+
+        """
+
         gl.glUseProgram(self.program)
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.cbo)
 
         for i in range(self.roll_buffer_size + 2):
-            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, (self.roll_buffer_size + 2)*line*3 + i*3, np.array(color, dtype=np.uint8))
+            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, (self.roll_buffer_size + 2)*index_line*3 + i*3, np.array(color, dtype=np.uint8))
 
         gl.glEnableVertexAttribArray(self.colorLocation)
 
     
 
 
-    def run(self, update_function):
+    def run(self, update_function) -> None:
+        """Run the plot
+
+        :param update_function: function to call to update the plot
+
+        """
+
         while not glfw.window_should_close(self.window):
             # Render here, e.g. using pyOpenGL
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)

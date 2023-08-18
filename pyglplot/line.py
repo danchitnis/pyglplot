@@ -5,6 +5,16 @@ import numpy as np
 from . import common
 
 class Line():
+    """A simple xy line plotter.
+    
+    :param line_size: number of points in the line
+    :param line_number: number of lines
+    :param width: window width
+    :param height: window height
+    :param title: window title
+    :param context_api: OpenGL windowing method: "native", "egl", "osmesa", or "auto"
+    
+    """
     
     def __init__(self, line_size = 100, line_number = 1, width = 1280, height = 800, title = "pyglplot", context_api = "native"):
 
@@ -80,7 +90,14 @@ class Line():
 
 
 
-    def update_color(self, index_line: int, rgb: np.ndarray):
+    def update_color(self, index_line: int, rgb: np.ndarray) -> None:
+        """update the color of a line
+        
+        :param index_line: index of the line to update
+        :param rgb: color of the line in numpy array of (3,) with values between 0 and 255. e.g. np.array([255, 0, 0]) for red
+        :return: None
+
+        """
 
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.cbo)
 
@@ -97,6 +114,13 @@ class Line():
 
 
     def update_line_xy(self, index_line: int, x: np.ndarray, y: np.ndarray):
+        """update the x and y values of a line
+        
+        :param index_line: index of the line to update
+        :param x: x values of the line in format of numpy array (x0, x1, x2, ...)
+        :param y: y values of the line in format of numpy array (y0, y1, y2, ...)
+        
+        """
 
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
 
@@ -108,7 +132,14 @@ class Line():
         gl.glEnableVertexAttribArray(self.position_location)
 
     
-    def update_line_x(self, index_line: int, x: np.ndarray):
+    def update_line_x(self, index_line: int, x: np.ndarray) -> None:
+        """update the x values of a line
+        
+        :param index_line: index of the line to update
+        :param x: x values of the line in format of numpy array (x0, x1, x2, ...)
+        :return: None
+
+        """
 
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
 
@@ -119,7 +150,14 @@ class Line():
         gl.glEnableVertexAttribArray(self.position_location)
 
     
-    def update_line_y(self, index_line: int, y: np.ndarray):
+    def update_line_y(self, index_line: int, y: np.ndarray) -> None:
+        """update the y values of a line
+
+        :param index_line: index of the line to update
+        :param y: y values of the line in format of numpy array (y0, y1, y2, ...)
+        :return: None
+
+        """
 
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
 
@@ -130,10 +168,16 @@ class Line():
         gl.glEnableVertexAttribArray(self.position_location)
 
     
-    def update_empty():
+    def _update_empty():
         pass
 
-    def run(self, update_function = update_empty):
+    def run(self, update_function = _update_empty):
+        """refresh the window and run the update function. This function will block the main thread until the window is closed.
+
+        :param update_function: function to run at each refresh
+        :return: None
+
+        """
         while not glfw.window_should_close(self.window):
             # Render here, e.g. using pyOpenGL
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)

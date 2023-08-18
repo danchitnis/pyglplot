@@ -166,7 +166,7 @@ def updateLines():
         gl.glBufferSubData(gl.GL_ARRAY_BUFFER, i * lineSize * 2 * 4, data.nbytes, data)
 
 
-    gl.glEnableVertexAttribArray(positionLocation)
+    #gl.glEnableVertexAttribArray(positionLocation)
 
 
 

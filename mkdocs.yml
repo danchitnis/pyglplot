@@ -48,3 +48,5 @@ plugins:
         python:
           import:
             - https://docs.python-requests.org/en/master/objects.inv
+          options:
+            docstring_style: "sphinx"

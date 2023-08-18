@@ -29,7 +29,7 @@ plot_roll = roll.Roll(2000, num_lines=NUM_LINES, context_api=CONTEXT_API)
 
 
 for i in range(NUM_LINES):
-    plot_roll.update_line_color([np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)], i)
+    plot_roll.update_line_color(i, [np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)])
 
 
 y = np.zeros(NUM_LINES)
